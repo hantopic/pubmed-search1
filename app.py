@@ -100,17 +100,17 @@ def index():
 @app.route('/download', methods=['POST'])
 def download():
     # Get the CSV data from the form
-    csv_data = request.form.get('csv_data')
-    if not csv_data:
+    data = request.form.get('csv_data')
+    if not data:
         # If no data was provided, respond with a 400 Bad Request or similar
         return "No data provided for CSV download.", 400
 
     # Parse the JSON data into Python objects (list of dicts)
     try:
-        rows = json.loads(csv_data)
+        rows = json.loads(data)
     except Exception as e:
         # Handle JSON parse errors
-        return f"Invalid data format: {e}", 400
+        return f"JSON 파싱 오류: {str(e)}", 400
 
     # Create a CSV in memory
     output = io.StringIO()
