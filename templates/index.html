@@ -3,50 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <title>PubMed 논문 검색</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 2em; background: #f7f7f7; }
+        input[type=text] { width: 300px; padding: 8px; }
+        button { padding: 8px 16px; margin-left: 10px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 2em; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+    </style>
 </head>
 <body>
-    <h1>PubMed 논문 검색 도구</h1>
+    <h2>PubMed 논문 검색 도구</h2>
     <form method="post">
-        <input type="text" name="keyword" placeholder="키워드를 입력하세요" value="{{ query }}">
+        <input type="text" name="keyword" placeholder="검색어 입력" value="{{ query }}">
         <button type="submit">검색</button>
     </form>
 
     {% if results %}
-        <h2>검색 결과 (총 {{ results|length }}건)</h2>
-        <form method="post" action="/download">
-            <input type="hidden" name="csv_data" value="{{ results|tojson }}">
-            <button type="submit">CSV 다운로드</button>
-        </form>
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>제목</th>
-                    <th>저자</th>
-                    <th>연도</th>
-                    <th>권</th>
-                    <th>호</th>
-                    <th>페이지/논문번호</th>
-                    <th>PMID</th>
-                    <th>PDF</th>
-                    <th>요약</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in results %}
-                <tr>
-                    <td>{{ row.title }}</td>
-                    <td>{{ row.authors }}</td>
-                    <td>{{ row.year }}</td>
-                    <td>{{ row.volume }}</td>
-                    <td>{{ row.issue }}</td>
-                    <td>{{ row.pages }}</td>
-                    <td>{{ row.pmid }}</td>
-                    <td><a href="{{ row.pdf_link }}" target="_blank">보기</a></td>
-                    <td>{{ row.summary }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <form method="post" action="/download">
+        <input type="hidden" name="csv_data" value="{{ results|tojson }}">
+        <button type="submit">CSV 다운로드</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>제목</th>
+                <th>저자</th>
+                <th>연도</th>
+                <th>권</th>
+                <th>호</th>
+                <th>페이지/논문번호</th>
+                <th>PMID</th>
+                <th>PDF</th>
+                <th>키워드</th>
+                <th>요약</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in results %}
+            <tr>
+                <td>{{ row.title }}</td>
+                <td>{{ row.authors }}</td>
+                <td>{{ row.year }}</td>
+                <td>{{ row.volume }}</td>
+                <td>{{ row.issue }}</td>
+                <td>{{ row.pages }}</td>
+                <td>{{ row.pmid }}</td>
+                <td><a href="{{ row.pdf_link }}" target="_blank">링크</a></td>
+                <td>{{ row.keywords }}</td>
+                <td>{{ row.summary }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
     {% endif %}
 </body>
 </html>
