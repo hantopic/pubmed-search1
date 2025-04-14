@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
-def search_pubmed(query, max_results=20):
+def search_pubmed(query, max_results=30):
     # ESearch: get list of PubMed IDs
     search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     search_params = {
