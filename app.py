@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
-def search_pubmed(query, max_results=100):
+def search_pubmed(query, max_results=30):
     search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     search_params = {
         "db": "pubmed",
@@ -37,6 +37,7 @@ def search_pubmed(query, max_results=100):
                 for a in article.find_all("Author")
                 if a.LastName and a.Initials
             ])
+            journal = article.Article.Journal.Title.text if article.Article.Journal and article.Article.Journal.Title else ""
             year = article.Article.Journal.JournalIssue.PubDate.Year.text if article.Article.Journal.JournalIssue.PubDate.Year else ""
             volume = article.Article.Journal.JournalIssue.Volume.text if article.Article.Journal.JournalIssue.Volume else ""
             issue = article.Article.Journal.JournalIssue.Issue.text if article.Article.Journal.JournalIssue.Issue else ""
@@ -59,6 +60,7 @@ def search_pubmed(query, max_results=100):
             results.append({
                 "title": title,
                 "authors": authors,
+                "journal": journal,
                 "year": year,
                 "volume": volume,
                 "issue": issue,
@@ -95,11 +97,12 @@ def download():
     data = request.form.get("csv_data")
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["제목", "저자", "발행 연도", "권", "호", "페이지/논문번호", "PMID", "PDF 링크", "키워드", "요약"])
+    writer.writerow(["제목", "저자", "학술지명", "발행 연도", "권", "호", "페이지/논문번호", "PMID", "PDF 링크", "키워드", "요약"])
     for row in eval(data):
         writer.writerow([
             row['title'],
             row['authors'],
+            row['journal'],
             row['year'],
             row['volume'],
             row['issue'],
