@@ -1,12 +1,24 @@
+
 from flask import Flask, render_template, request, send_file
 import requests
 import csv
 import os
 import io
+import json
 from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
+# 1. 요약 함수 먼저 정의
+def summarize_text(text, max_words=300):
+    if not text:
+        return "(No abstract available)"
+    words = text.split()
+    if len(words) <= max_words:
+        return text
+    return " ".join(words[:max_words]) + "..."
+
+# 2. PubMed 검색 및 데이터 파싱 함수
 def search_pubmed(query, max_results=100):
     search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     search_params = {
@@ -75,26 +87,17 @@ def search_pubmed(query, max_results=100):
 
     return results
 
-def summarize_text(text, max_words=300):
-    if not text:
-        return "(No abstract available)"
-    words = text.split()
-    if len(words) <= max_words:
-        return text
-    return " ".join(words[:max_words]) + "..."
-
-@app.route("/", methods=["GET", "POST"])
+# 3. 메인 페이지 라우트
 def index():
     results = []
     query = ""
     if request.method == "POST":
         query = request.form["keyword"]
-        results = search_pubmed(query)
+        results = search_pubmed(query, max_results=20)
     return render_template("index.html", results=results, query=query)
 
-@app.route("/download", methods=["POST"])
+# 4. CSV 다운로드 라우트
 def download():
-    import json
     data = request.form.get("csv_data")
     rows = json.loads(data)
     output = io.StringIO()
@@ -102,17 +105,8 @@ def download():
     writer.writerow(["제목", "저자", "학술지명", "발행 연도", "권", "호", "페이지/논문번호", "PMID", "PDF 링크", "키워드", "요약"])
     for row in rows:
         writer.writerow([
-            row['title'],
-            row['authors'],
-            row['journal'],
-            row['year'],
-            row['volume'],
-            row['issue'],
-            row['pages'],
-            row['pmid'],
-            row['pdf_link'],
-            row['keywords'],
-            row['summary']
+            row['title'], row['authors'], row['journal'], row['year'], row['volume'],
+            row['issue'], row['pages'], row['pmid'], row['pdf_link'], row['keywords'], row['summary']
         ])
 
     mem = io.BytesIO()
@@ -121,6 +115,11 @@ def download():
     output.close()
     return send_file(mem, mimetype='text/csv', download_name='pubmed_results.csv', as_attachment=True)
 
+# 라우트 등록
+app.add_url_rule('/', view_func=index, methods=['GET', 'POST'])
+app.add_url_rule('/download', view_func=download, methods=['POST'])
+
+# 로컬 실행 시
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, host="0.0.0.0", port=port)
