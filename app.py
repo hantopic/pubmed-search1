@@ -9,15 +9,6 @@ from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
-# 1. 요약 함수 먼저 정의
-def summarize_text(text, max_words=300):
-    if not text:
-        return "(No abstract available)"
-    words = text.split()
-    if len(words) <= max_words:
-        return text
-    return " ".join(words[:max_words]) + "..."
-
 # 2. PubMed 검색 및 데이터 파싱 함수
 def search_pubmed(query, max_results=100):
     search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
@@ -86,6 +77,15 @@ def search_pubmed(query, max_results=100):
             continue
 
     return results
+
+# 1. 요약 함수 먼저 정의
+def summarize_text(text, max_words=300):
+    if not text:
+        return "(No abstract available)"
+    words = text.split()
+    if len(words) <= max_words:
+        return text
+    return " ".join(words[:max_words]) + "..."
 
 # 3. 메인 페이지 라우트
 def index():
