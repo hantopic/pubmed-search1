@@ -94,11 +94,13 @@ def index():
 
 @app.route("/download", methods=["POST"])
 def download():
+    import json
     data = request.form.get("csv_data")
+    rows = json.loads(data)
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["제목", "저자", "학술지명", "발행 연도", "권", "호", "페이지/논문번호", "PMID", "PDF 링크", "키워드", "요약"])
-    for row in eval(data):
+    for row in rows:
         writer.writerow([
             row['title'],
             row['authors'],
