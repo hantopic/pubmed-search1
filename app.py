@@ -97,29 +97,39 @@ def index():
     return render_template("index.html", results=results, query=query)
 
 # 4. CSV 다운로드 라우트
+@app.route('/download', methods=['POST'])
 def download():
-    data = request.form.get("csv_data")
-    rows = json.loads(data)
+    # Get the CSV data from the form
+    csv_data = request.form.get('csv_data')
+    if not csv_data:
+        # If no data was provided, respond with a 400 Bad Request or similar
+        return "No data provided for CSV download.", 400
+
+    # Parse the JSON data into Python objects (list of dicts)
+    try:
+        rows = json.loads(csv_data)
+    except Exception as e:
+        # Handle JSON parse errors
+        return f"Invalid data format: {e}", 400
+
+    # Create a CSV in memory
     output = io.StringIO()
     writer = csv.writer(output)
+    # Write header row (in Korean as in original code)
     writer.writerow(["제목", "저자", "학술지명", "발행 연도", "권", "호", "페이지/논문번호", "PMID", "PDF 링크", "키워드", "요약"])
     for row in rows:
         writer.writerow([
-            row['title'], row['authors'], row['journal'], row['year'], row['volume'],
-            row['issue'], row['pages'], row['pmid'], row['pdf_link'], row['keywords'], row['summary']
+            row.get('title', ""), row.get('authors', ""), row.get('journal', ""), 
+            row.get('year', ""), row.get('volume', ""), row.get('issue', ""), 
+            row.get('pages', ""), row.get('pmid', ""), row.get('pdf_link', ""), 
+            row.get('keywords', ""), row.get('summary', "")
         ])
 
+    # Prepare the in-memory CSV for download
     mem = io.BytesIO()
     mem.write(output.getvalue().encode('utf-8'))
     mem.seek(0)
     output.close()
+
+    # Send the file to the client as an attachment
     return send_file(mem, mimetype='text/csv', download_name='pubmed_results.csv', as_attachment=True)
-
-# 라우트 등록
-app.add_url_rule('/', view_func=index, methods=['GET', 'POST'])
-app.add_url_rule('/download', view_func=download, methods=['POST'])
-
-# 로컬 실행 시
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host="0.0.0.0", port=port)
