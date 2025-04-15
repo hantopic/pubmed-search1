@@ -122,3 +122,20 @@ def download():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, host="0.0.0.0", port=port)
+@app.route("/download_pdfs", methods=["POST"])
+
+def download_pdfs():
+    pdf_urls = request.json.get('pdf_urls', [])
+    zip_buffer = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+        for i, url in enumerate(pdf_urls):
+            try:
+                response = requests.get(url, timeout=10)
+                if response.status_code == 200:
+                    zip_file.writestr(f"paper_{i+1}.pdf", response.content)
+            except Exception as e:
+                print(f"PDF download error for {url}: {e}")
+
+    zip_buffer.seek(0)
+    return send_file(zip_buffer, mimetype='application/zip', as_attachment=True, download_name='papers.zip')
