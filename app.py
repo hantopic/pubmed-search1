@@ -119,11 +119,7 @@ def download():
     output.close()
     return send_file(mem, mimetype='text/csv', download_name='pubmed_results.csv', as_attachment=True)
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host="0.0.0.0", port=port)
 @app.route("/download_pdfs", methods=["POST"])
-
 def download_pdfs():
     pdf_urls = request.json.get('pdf_urls', [])
     zip_buffer = io.BytesIO()
@@ -139,3 +135,8 @@ def download_pdfs():
 
     zip_buffer.seek(0)
     return send_file(zip_buffer, mimetype='application/zip', as_attachment=True, download_name='papers.zip')
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, host="0.0.0.0", port=port)
