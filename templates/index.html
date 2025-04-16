@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>PubMed 논문 검색</title>
+    <title>PubMed 논문 검색(무료논문 100개 찾기)</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 2em; background: #f7f7f7; }
         input[type=text] { width: 300px; padding: 8px; }
@@ -20,11 +20,7 @@
     </form>
 
     {% if results %}
-    <form method="post" action="/download">
-        <input type="hidden" name="csv_data" value="{{ results|tojson }}">
-        <button type="submit">CSV 다운로드</button>
-    </form>
-
+    
     <table>
         <thead>
             <tr>
