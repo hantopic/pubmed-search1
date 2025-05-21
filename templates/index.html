@@ -32,6 +32,7 @@
     <table>
         <thead>
             <tr>
+                <th>No</th>
                 <th>제목</th>
                 <th>저자</th>
                 <th>학술지명</th>
@@ -48,6 +49,7 @@
         <tbody>
         {% for row in results %}
             <tr>
+                <td>{{ loop.index }}</td>
                 <td>{{ row.title }}</td>
                 <td>{{ row.authors }}</td>
                 <td>{{ row.journal }}</td>
