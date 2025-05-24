@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>PubMed 논문 검색(세션 기반 CSV 다운로드)</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 2em; background: #f7f7f7; }
+        input[type=text] { width: 300px; padding: 8px; }
+        button, select { padding: 8px 16px; margin-left: 10px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 2em; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+    </style>
+</head>
+<body>
+    <h2>PubMed 논문 검색 도구 (세션 기반 다운로드)</h2>
+    <form method="post" id="searchForm">
+        <input type="text" name="keyword" placeholder="검색어 입력" value="{{ query }}">
+        <label for="count">개수:</label>
+        <select name="count">
+            <option value="100" selected>100개</option>
+            <option value="200">200개</option>
+            <option value="300">300개</option>
+            <option value="400">400개</option>
+            <option value="500">500개</option>
+            <option value="1000">1000개</option>
+        </select>
+        <button type="submit" id="searchBtn">검색</button>
+    </form>
+
+    {% if results %}
+    <a href="/download/{{ session_id }}">
+        <button type="button">CSV 다운로드</button>
+    </a>
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>제목</th>
+                <th>저자</th>
+                <th>학술지명</th>
+                <th>연도</th>
+                <th>권</th>
+                <th>호</th>
+                <th>페이지/논문번호</th>
+                <th>PMID</th>
+                <th>PDF</th>
+                <th>키워드</th>
+                <th>요약</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in results %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ row.title }}</td>
+                <td>{{ row.authors }}</td>
+                <td>{{ row.journal }}</td>
+                <td>{{ row.year }}</td>
+                <td>{{ row.volume }}</td>
+                <td>{{ row.issue }}</td>
+                <td>{{ row.pages }}</td>
+                <td>{{ row.pmid }}</td>
+                <td><a href="{{ row.pdf_link }}" target="_blank">링크</a></td>
+                <td>{{ row.keywords }}</td>
+                <td>{{ row.summary }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+<script>
+document.getElementById("searchForm").addEventListener("submit", function() {
+    const btn = document.getElementById("searchBtn");
+    btn.disabled = true;
+    btn.innerText = "검색 중입니다...";
+});
+</script>
+</body>
+</html>
