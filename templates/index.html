@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>PubMed 논문 검색기</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <h2>PubMed 논문 검색</h2>
+  <form id="searchForm">
+    <input type="text" name="keyword" placeholder="검색어 입력" required>
+    <input type="hidden" name="start" value="0">
+    <button type="submit">검색</button>
+  </form>
+
+  <div id="results"></div>
+
+  <button id="loadMoreBtn" style="display:none;">다음 500개 논문 찾기</button>
+
+  <script>
+    let currentKeyword = "";
+    let currentStart = 0;
+
+    function renderArticles(articles) {
+      articles.forEach(article => {
+        $("#results").append(`
+          <div style="border-bottom:1px solid #ccc; margin-bottom:10px; padding:5px;">
+            <a href="${article.pdf_link}" target="_blank"><strong>${article.title}</strong></a><br>
+            ${article.authors}<br>
+            ${article.journal}, ${article.year} | PMID: ${article.pmid}<br>
+            <small>${article.summary}</small>
+          </div>
+        `);
+      });
+    }
+
+    function loadArticles() {
+      $.post("/search", {
+        keyword: currentKeyword,
+        start: currentStart
+      }, function(data) {
+        renderArticles(data.articles);
+        currentStart = data.next_start;
+        if (data.has_more) {
+          $("#loadMoreBtn").show();
+        } else {
+          $("#loadMoreBtn").hide();
+        }
+      });
+    }
+
+    $("#searchForm").on("submit", function(e) {
+      e.preventDefault();
+      $("#results").empty();
+      currentKeyword = $("input[name='keyword']").val();
+      currentStart = 0;
+      loadArticles();
+    });
+
+    $("#loadMoreBtn").on("click", function() {
+      loadArticles();
+    });
+  </script>
+</body>
+</html>
