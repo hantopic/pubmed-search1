@@ -74,6 +74,8 @@
 
     function renderArticles(articles) {
       $("#resultsTable").show();
+      $("#resultsBody").empty();  
+      rowIndex = 1; 
       articles.slice(0, initialCount).forEach(article => {
         const row = `
           <tr>
@@ -130,6 +132,7 @@
 
     $("#loadMoreBtn").on("click", function () {
       $("#loadMoreBtn").prop("disabled", true).text("검색 중...");
+      $("#resultsBody").empty();
       loadArticles();
     });
   </script>
