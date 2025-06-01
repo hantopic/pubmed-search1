@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>PubMed 논문 검색 도구</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    #searchBtn[disabled], #loadMoreBtn[disabled] {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <h2>PubMed 논문 검색 도구 (무료 논문 최대 500개)</h2>
+
+  <form method="post" id="searchForm">
+    <input type="text" name="keyword" placeholder="검색어 입력" required>
+    <label for="count">개수:</label>
+    <select name="count" id="countSelect">
+      <option value="100">100개</option>
+      <option value="200">200개</option>
+      <option value="300">300개</option>
+      <option value="400">400개</option>
+      <option value="500" selected>500개</option>
+    </select>
+    <input type="hidden" name="start" value="0">
+    <button type="submit" id="searchBtn">검색</button>
+  </form>
+
+  <table id="resultsTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>제목</th>
+        <th>저자</th>
+        <th>학술지명</th>
+        <th>연도</th>
+        <th>권</th>
+        <th>호</th>
+        <th>페이지/논문번호</th>
+        <th>PMID</th>
+        <th>PDF</th>
+        <th>키워드</th>
+        <th>요약</th>
+      </tr>
+    </thead>
+    <tbody id="resultsBody"></tbody>
+  </table>
+
+  <button id="loadMoreBtn" style="display:none;">다음 200개 논문 찾기</button>
+
+  <script>
+    let currentKeyword = "";
+    let currentStart = 0;
+    let initialCount = 500;
+    let loadMoreCount = 200;
+    let rowIndex = 1;
+
+    function renderArticles(articles) {
+      $("#resultsBody").empty();
+      rowIndex = 1;
+      $("#resultsTable").show();
+      articles.slice(0, currentStart === 0 ? initialCount : loadMoreCount).forEach(article => {
+        const row = `
+          <tr>
+            <td>${rowIndex++}</td>
+            <td>${article.title}</td>
+            <td>${article.authors}</td>
+            <td>${article.journal}</td>
+            <td>${article.year}</td>
+            <td>${article.volume}</td>
+            <td>${article.issue}</td>
+            <td>${article.pages}</td>
+            <td>${article.pmid}</td>
+            <td><a href="${article.pdf_link}" target="_blank">링크</a></td>
+            <td>${article.keywords}</td>
+            <td>${article.summary}</td>
+          </tr>
+        `;
+        $("#resultsBody").append(row);
+      });
+    }
+
+    function loadArticles() {
+      $.post("/search", {
+        keyword: currentKeyword,
+        start: currentStart,
+        count: currentStart === 0 ? initialCount : loadMoreCount
+      }, function(data) {
+        renderArticles(data.articles);
+        currentStart = data.next_start;
+        if (data.has_more) {
+          $("#loadMoreBtn").show();
+        } else {
+          $("#loadMoreBtn").hide();
+        }
+        $("#searchBtn").prop("disabled", false).text("검색");
+        $("#loadMoreBtn").prop("disabled", false).text("다음 200개 논문 찾기");
+      });
+    }
+
+    $("#countSelect").on("change", function () {
+      initialCount = parseInt($(this).val());
+    });
+
+    $("#searchForm").on("submit", function(e) {
+      e.preventDefault();
+      $("#resultsBody").empty();
+      $("#resultsTable").hide();
+      currentKeyword = $("input[name='keyword']").val();
+      currentStart = 0;
+      rowIndex = 1;
+      $("#searchBtn").prop("disabled", true).text("검색 중...");
+      loadArticles();
+    });
+
+    $("#loadMoreBtn").on("click", function () {
+      $("#resultsBody").empty();
+      rowIndex = 1;
+      $("#loadMoreBtn").prop("disabled", true).text("검색 중...");
+      loadArticles();
+    });
+  </script>
+</body>
+</html>
